@@ -1,1 +1,32 @@
-.github/workflows/
+name: 自動更新每日 CSV
+
+on:
+  schedule:
+    - cron: '0 1 * * *'  # 每天台灣早上 9 點跑（UTC+8）
+  workflow_dispatch:
+
+jobs:
+  update-csv:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 拉取 repo
+        uses: actions/checkout@v3
+
+      - name: 安裝 Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: 安裝 pandas
+        run: pip install pandas
+
+      - name: 執行自動分類腳本
+        run: python update_csv.py
+
+      - name: 推送更新結果
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add infinite-article-data-with-category.csv
+          git commit -m "每日自動更新資料"
+          git push
